@@ -160,7 +160,7 @@ blueprint:
     tesla_charging_amps_upper_value:
       name: Select the peak amps for charger (Amps)
       description: Select the number of amps that charging should not be increased past. Best set to the maximum charge rate possible with the charger, or a lower value. Not higher than the maximum possible with the charger.
-      default: 8
+      default: 16
       selector:
         number:
           min: 0
@@ -170,7 +170,7 @@ blueprint:
     tesla_charging_amps_lower_value:
       name: Select the minimum amps for charger (Amps)
       description: Select the number of amps to reduce charging to when a power sensor upper/max value is exceeded
-      default: 2
+      default: 5
       selector:
         number:
           min: 0
