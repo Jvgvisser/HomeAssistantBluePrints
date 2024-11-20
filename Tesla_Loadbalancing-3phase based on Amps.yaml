@@ -156,6 +156,8 @@ blueprint:
             - domain: number
               integration: tesla
             - domain: number
+              integration: tesla Fleet
+            - domain: number
               integration: lektrico_custom
     tesla_charging_amps_upper_value:
       name: Select the peak amps for charger (Amps)
