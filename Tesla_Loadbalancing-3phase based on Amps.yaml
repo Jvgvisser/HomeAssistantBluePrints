@@ -4,6 +4,7 @@ blueprint:
     ## Tesla controlled charge rate based on power sensor (3-phase version)
 
     This is a fork of https://community.home-assistant.io/t/tesla-controlled-charge-rate-based-on-power-sensor/607107/1 by DataBitz
+    Then adapted to Amps based model for current.
 
     Checks every x minutes to find the optimum charging value based on home power usage W.
 
