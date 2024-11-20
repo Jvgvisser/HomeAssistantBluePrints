@@ -1,5 +1,5 @@
 blueprint:
-  name: Tesla controlled charge rate based on power sensor on current (3-phase version)
+  name: Tesla controlled charge rate based on power sensor on current(A) (3-phase version)
   description: |
     ## Tesla controlled charge rate based on power sensor (3-phase version)
 
