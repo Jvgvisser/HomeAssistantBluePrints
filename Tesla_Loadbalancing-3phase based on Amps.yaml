@@ -152,13 +152,7 @@ blueprint:
         entity:
           filter:
             - domain: number
-              integration: tesla_custom
-            - domain: number
-              integration: tesla
-            - domain: number
-              integration: tesla Fleet
-            - domain: number
-              integration: lektrico_custom
+      
     tesla_charging_amps_upper_value:
       name: Select the peak amps for charger (Amps)
       description: Select the number of amps that charging should not be increased past. Best set to the maximum charge rate possible with the charger, or a lower value. Not higher than the maximum possible with the charger.
@@ -186,9 +180,6 @@ blueprint:
         entity:
           filter:
             - domain: device_tracker
-              integration: tesla_custom
-            - domain: device_tracker
-              integration: tesla
     tesla_control_location:
       name: Select the Tesla location to be controlled
       description: Select the location where the charging should be controlled (e.g. Home)
