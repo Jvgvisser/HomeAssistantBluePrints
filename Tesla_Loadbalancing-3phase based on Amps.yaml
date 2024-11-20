@@ -152,6 +152,7 @@ blueprint:
         entity:
           filter:
             - domain: number
+              device_class: current
       
     tesla_charging_amps_upper_value:
       name: Select the peak amps for charger (Amps)
