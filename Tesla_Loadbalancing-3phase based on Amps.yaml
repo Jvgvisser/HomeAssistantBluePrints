@@ -19,108 +19,108 @@ blueprint:
   input:
     power_sensor_phase_1_entity:
       name: Power Sensor Phase 1
-      description: This is the power sensor for phase 1 that will be used to measure load (e.g. sensor.main_meter_power), check the state of the sensor to determine if it uses W or kW and use the same units when setting trigger values.
+      description: This is the power sensor for phase 1 that will be used to measure load in Amps (e.g. sensor.main_meter_power L1)
       selector:
         entity:
           filter:
             - domain: sensor
-              device_class: power
+              device_class: current
     power_sensor_phase_1_max_value:
-      name: Power Sensor Phase 1 Trigger Max Value (W or kW based on sensor type)
+      name: Power Sensor Phase 1 Trigger Max Value (A)
       description: This is a absolute max value which will trigger a drop in charging amps.
-      default: 5750
+      default: 30
       selector:
         number:
           min: 0
-          max: 100000
+          max: 80
           mode: box
     power_sensor_phase_1_charge_upper_value:
-      name: Power Sensor Phase 1 Trigger Upper Value (W or kW based on sensor type)
+      name: Power Sensor Phase 1 Trigger Upper Value (A)
       description: This is the upper value for the power sensor which will trigger a drop in charging amps.
-      default: 4700
+      default: 25
       selector:
         number:
           min: 0
-          max: 100000
+          max: 80
           mode: box
     power_sensor_phase_1_charge_lower_value:
-      name: Power Sensor Phase 1 Charging Lower Value (W or kW based on sensor type)
+      name: Power Sensor Phase 1 Charging Lower Value (A)
       description: This is the value for the power sensor which allows the charger to increase amps.
-      default: 2000
+      default: 9
       selector:
         number:
           min: 0
-          max: 100000
+          max: 80
           mode: box
     power_sensor_phase_2_entity:
       name: Power Sensor Phase 2
-      description: This is the power sensor for phase 2 that will be used to measure load (e.g. sensor.main_meter_power), check the state of the sensor to determine if it uses W or kW and use the same units when setting trigger values.
+      description: This is the power sensor for phase 1 that will be used to measure load in Amps (e.g. sensor.main_meter_power L2)
       selector:
         entity:
           filter:
             - domain: sensor
-              device_class: power
+              device_class: current
     power_sensor_phase_2_max_value:
-      name: Power Sensor Phase 2 Trigger Max Value (W or kW based on sensor type)
+      name: Power Sensor Phase 2 Trigger Max Value (A)
       description: This is a absolute max value which will trigger a drop in charging amps.
-      default: 5750
+      default: 30
       selector:
         number:
           min: 0
-          max: 100000
+          max: 80
           mode: box
     power_sensor_phase_2_charge_upper_value:
-      name: Power Sensor Phase 2 Trigger Upper Value (W or kW based on sensor type)
+      name: Power Sensor Phase 2 Trigger Upper Value (A)
       description: This is the upper value for the power sensor which will trigger a drop in charging amps.
-      default: 4700
+      default: 25
       selector:
         number:
           min: 0
-          max: 100000
+          max: 80
           mode: box
     power_sensor_phase_2_charge_lower_value:
-      name: Power Sensor Phase 2 Charging Lower Value (W or kW based on sensor type)
+      name: Power Sensor Phase 2 Charging Lower Value (A)
       description: This is the value for the power sensor which allows the charger to increase amps.
-      default: 2000
+      default: 9
       selector:
         number:
           min: 0
-          max: 100000
+          max: 80
           mode: box
     power_sensor_phase_3_entity:
       name: Power Sensor Phase 3
-      description: This is the power sensor for phase 3 that will be used to measure load (e.g. sensor.main_meter_power), check the state of the sensor to determine if it uses W or kW and use the same units when setting trigger values.
+      description: This is the power sensor for phase 1 that will be used to measure load in Amps (e.g. sensor.main_meter_power L3)
       selector:
         entity:
           filter:
             - domain: sensor
-              device_class: power
+              device_class: current
     power_sensor_phase_3_max_value:
-      name: Power Sensor Phase 3 Trigger Max Value (W or kW based on sensor type)
+      name: Power Sensor Phase 3 Trigger Max Value (A)
       description: This is a absolute max value which will trigger a drop in charging amps.
-      default: 5750
+      default: 30
       selector:
         number:
           min: 0
-          max: 100000
+          max: 80
           mode: box
     power_sensor_phase_3_charge_upper_value:
-      name: Power Sensor Phase 3 Trigger Upper Value (W or kW based on sensor type)
+      name: Power Sensor Phase 3 Trigger Upper Value (A)
       description: This is the upper value for the power sensor which will trigger a drop in charging amps.
-      default: 4700
+      default: 25
       selector:
         number:
           min: 0
-          max: 100000
+          max: 80
           mode: box
     power_sensor_phase_3_charge_lower_value:
-      name: Power Sensor Phase 3 Charging Lower Value (W or kW based on sensor type)
+      name: Power Sensor Phase 1 Charging Lower Value (A)
       description: This is the value for the power sensor which allows the charger to increase amps.
-      default: 2000
+      default: 9
       selector:
         number:
           min: 0
-          max: 100000
+          max: 80
           mode: box
     polling_time:
       name: Polling frequency (Mins)
