@@ -1,16 +1,16 @@
 blueprint:
-  name: Tesla controlled charge rate based on power sensor (3-phase version)
+  name: Tesla controlled charge rate based on power sensor on current (3-phase version)
   description: |
     ## Tesla controlled charge rate based on power sensor (3-phase version)
 
     This is a fork of https://community.home-assistant.io/t/tesla-controlled-charge-rate-based-on-power-sensor/607107/1 by DataBitz
     Then adapted to Amps based model for current.
 
-    Checks every x minutes to find the optimum charging value based on home power usage W.
+    Checks every x minutes to find the optimum charging value based on home power usage A.
 
-    Decreases charge rate significantly when a upper or maximum W value is reached by a power sensor.
+    Decreases charge rate significantly when a upper or maximum A value is reached by a power sensor.
 
-    Increases charge rate by 1 every x minutes if power sensor is below a lower W value.
+    Increases charge rate by 1 every x minutes if power sensor is below a lower A value.
 
     **IMPORTANT => Use at your own risk. Please see the discussions in the Home Assistant community**
 
@@ -28,7 +28,7 @@ blueprint:
     power_sensor_phase_1_max_value:
       name: Power Sensor Phase 1 Trigger Max Value (A)
       description: This is a absolute max value which will trigger a drop in charging amps.
-      default: 30
+      default: 28
       selector:
         number:
           min: 0
@@ -37,7 +37,7 @@ blueprint:
     power_sensor_phase_1_charge_upper_value:
       name: Power Sensor Phase 1 Trigger Upper Value (A)
       description: This is the upper value for the power sensor which will trigger a drop in charging amps.
-      default: 25
+      default: 23
       selector:
         number:
           min: 0
@@ -46,7 +46,7 @@ blueprint:
     power_sensor_phase_1_charge_lower_value:
       name: Power Sensor Phase 1 Charging Lower Value (A)
       description: This is the value for the power sensor which allows the charger to increase amps.
-      default: 9
+      default: 16
       selector:
         number:
           min: 0
@@ -63,7 +63,7 @@ blueprint:
     power_sensor_phase_2_max_value:
       name: Power Sensor Phase 2 Trigger Max Value (A)
       description: This is a absolute max value which will trigger a drop in charging amps.
-      default: 30
+      default: 28
       selector:
         number:
           min: 0
@@ -72,7 +72,7 @@ blueprint:
     power_sensor_phase_2_charge_upper_value:
       name: Power Sensor Phase 2 Trigger Upper Value (A)
       description: This is the upper value for the power sensor which will trigger a drop in charging amps.
-      default: 25
+      default: 23
       selector:
         number:
           min: 0
@@ -81,7 +81,7 @@ blueprint:
     power_sensor_phase_2_charge_lower_value:
       name: Power Sensor Phase 2 Charging Lower Value (A)
       description: This is the value for the power sensor which allows the charger to increase amps.
-      default: 9
+      default: 16
       selector:
         number:
           min: 0
@@ -98,7 +98,7 @@ blueprint:
     power_sensor_phase_3_max_value:
       name: Power Sensor Phase 3 Trigger Max Value (A)
       description: This is a absolute max value which will trigger a drop in charging amps.
-      default: 30
+      default: 28
       selector:
         number:
           min: 0
@@ -107,7 +107,7 @@ blueprint:
     power_sensor_phase_3_charge_upper_value:
       name: Power Sensor Phase 3 Trigger Upper Value (A)
       description: This is the upper value for the power sensor which will trigger a drop in charging amps.
-      default: 25
+      default: 23
       selector:
         number:
           min: 0
@@ -116,7 +116,7 @@ blueprint:
     power_sensor_phase_3_charge_lower_value:
       name: Power Sensor Phase 1 Charging Lower Value (A)
       description: This is the value for the power sensor which allows the charger to increase amps.
-      default: 9
+      default: 16
       selector:
         number:
           min: 0
