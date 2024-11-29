@@ -54,7 +54,7 @@ blueprint:
           mode: box
     power_sensor_phase_2_entity:
       name: Power Sensor Phase 2
-      description: This is the power sensor for phase 1 that will be used to measure load in Amps (e.g. sensor.main_meter_power L2)
+      description: This is the power sensor for phase 2 that will be used to measure load in Amps (e.g. sensor.main_meter_power L2)
       selector:
         entity:
           filter:
@@ -89,7 +89,7 @@ blueprint:
           mode: box
     power_sensor_phase_3_entity:
       name: Power Sensor Phase 3
-      description: This is the power sensor for phase 1 that will be used to measure load in Amps (e.g. sensor.main_meter_power L3)
+      description: This is the power sensor for phase 3 that will be used to measure load in Amps (e.g. sensor.main_meter_power L3)
       selector:
         entity:
           filter:
