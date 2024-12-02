@@ -1,5 +1,5 @@
 blueprint:
-  name: Tesla controlled charge rate based on power sensor on current(A) (3-phase version)
+  name: Tesla controlled charge rate based on power sensor on current(A) (3-phase version) and BLE Tesla (device tracker not needed)
   description: |
     ## Tesla controlled charge rate based on power sensor (3-phase version)
 
@@ -7,6 +7,9 @@ blueprint:
     and
     https://github.com/PsychoMnts/HomeAssistantBluePrints/blob/main/Tesla_Loadbalancing-3phase.yaml    
     Then adapted to Amps based model for current.
+
+    Special thanks to Yoziru for providing the BLE integration
+    https://github.com/yoziru/esphome-tesla-ble
 
     Checks every x minutes to find the optimum charging value based on home power usage A.
 
