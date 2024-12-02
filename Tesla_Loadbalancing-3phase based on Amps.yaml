@@ -176,26 +176,7 @@ blueprint:
           max: 16
           step: 1
           mode: slider
-    tesla_device_tracker_entity:
-      name: Select the Tesla location entity
-      description: Select the entity which represents the Tesla location (e.g. device_tracker.tesla_location_tracker)
-      selector:
-        entity:
-          filter:
-            - domain: device_tracker
-    tesla_control_location:
-      name: Select the Tesla location to be controlled
-      description: Select the location where the charging should be controlled (e.g. Home)
-      default: home
-      selector:
-        select:
-          options:
-            - label: Home
-              value: home
-            - label: Away
-              value: not_home
-            - label: Any
-              value: "null"
+
   source_url: https://www.github.com/
 
 variables:
@@ -236,9 +217,6 @@ condition:
     entity_id: !input tesla_charging_state_entity
     state: "on"
     enabled: true
-  - condition: state
-    entity_id: !input tesla_device_tracker_entity
-    state: !input tesla_control_location
 
 action:
   - if:
