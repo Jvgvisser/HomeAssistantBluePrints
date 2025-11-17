@@ -1,12 +1,12 @@
 blueprint:
-  name: RTC – Room Temperature Compensation (15 min fixed)
+  name: RTC – Room Temperature Compensation (Fixed 15 min)
   description: >
-    RTC-regeling die automatisch de warmtepomp-offset instelt
-    op basis van verschil tussen thermostaat en ruimtetemperatuur.
-    Deze versie draait VAST elke 15 minuten (00,15,30,45).
+    Regelt automatisch de warmtepomp-offset (+3 t/m -3) op basis van het
+    verschil tussen thermostaattemperatuur en ruimtetemperatuur.
+    Draait VAST elke 15 minuten (00, 15, 30, 45). 
+    Geen helpers nodig. Werkt alleen in de vereiste WP-modus.
 
   domain: automation
-
   input:
     thermostat:
       name: Thermostaat (basistemperatuur)
@@ -35,6 +35,7 @@ blueprint:
 
     required_mode:
       name: Vereiste WP-modus
+      description: Alleen draaien als WP deze modus heeft.
       default: "Heat+DHW"
       selector:
         text:
@@ -45,11 +46,11 @@ blueprint:
       selector:
         number:
           min: 0
-          max: 1
+          max: 2
           step: 0.1
 
     warm_threshold_1:
-      name: Te warm → -1 (°C verschil)
+      name: Te warm → offset -1 bij diff ≥
       default: 0.5
       selector:
         number:
@@ -58,7 +59,7 @@ blueprint:
           step: 0.1
 
     warm_threshold_2:
-      name: Te warm → -2 (°C verschil)
+      name: Te warm → offset -2 bij diff ≥
       default: 1.0
       selector:
         number:
@@ -67,7 +68,7 @@ blueprint:
           step: 0.1
 
     warm_threshold_3:
-      name: Te warm → -3 (°C verschil)
+      name: Te warm → offset -3 bij diff ≥
       default: 1.5
       selector:
         number:
@@ -76,7 +77,7 @@ blueprint:
           step: 0.1
 
     cold_threshold_1:
-      name: Te koud → +1 (°C verschil)
+      name: Te koud → offset +1 bij diff ≥
       default: 0.5
       selector:
         number:
@@ -85,7 +86,7 @@ blueprint:
           step: 0.1
 
     cold_threshold_2:
-      name: Te koud → +2 (°C verschil)
+      name: Te koud → offset +2 bij diff ≥
       default: 1.0
       selector:
         number:
@@ -94,7 +95,7 @@ blueprint:
           step: 0.1
 
     cold_threshold_3:
-      name: Te koud → +3 (°C verschil)
+      name: Te koud → offset +3 bij diff ≥
       default: 1.5
       selector:
         number:
@@ -102,29 +103,37 @@ blueprint:
           max: 5
           step: 0.1
 
+
 mode: single
 
-# 🔥 ELKE 15 MINUTEN: 00, 15, 30, 45
+##############################################
+# TRIGGER – ELKE 15 MINUTEN (00, 15, 30, 45)
+##############################################
 trigger:
   - platform: time_pattern
-    minutes: "0"
+    minute: "0"
   - platform: time_pattern
-    minutes: "15"
+    minute: "15"
   - platform: time_pattern
-    minutes: "30"
+    minute: "30"
   - platform: time_pattern
-    minutes: "45"
+    minute: "45"
 
-# Alleen draaien als WP-modus overeenkomt
+##############################################
+# CONDITION – WP moet in juiste modus staan
+##############################################
 condition:
   - condition: template
     value_template: >
       {{ states(wp_mode_entity) | trim | lower ==
          required_mode | trim | lower }}
 
+##############################################
+# VARIABLES – Logica voor diff & offset
+##############################################
 variables:
-  set: "{{ state_attr(thermostat, 'temperature') | float }}"
-  room: "{{ states(room_temp) | float }}"
+  set: "{{ state_attr(thermostat, 'temperature') | float(0) }}"
+  room: "{{ states(room_temp) | float(0) }}"
   diff: "{{ set - room }}"
   h: "{{ hysteresis | float }}"
 
@@ -137,11 +146,11 @@ variables:
   ct3: "{{ cold_threshold_3 | float }}"
 
   offset: >-
-    {% if diff > ct3 + h %}
+    {% if diff > (ct3 + h) %}
       3
-    {% elif diff > ct2 + h %}
+    {% elif diff > (ct2 + h) %}
       2
-    {% elif diff > ct1 + h %}
+    {% elif diff > (ct1 + h) %}
       1
     {% elif diff < -(wt3 + h) %}
       -3
@@ -153,6 +162,9 @@ variables:
       0
     {% endif %}
 
+##############################################
+# ACTION – Offset zetten
+##############################################
 action:
   - service: number.set_value
     target:
