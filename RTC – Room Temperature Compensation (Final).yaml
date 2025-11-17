@@ -1,12 +1,9 @@
 blueprint:
-  name: RTC – Room Temperature Compensation (Working v2)
+  name: RTC – Room Temperature Compensation (15 min fixed)
   description: >
-    RTC-regeling die op basis van het verschil tussen de thermostaat
-    (basistemperatuur) en de ruimtetemperatuur automatisch de
-    warmtepomp-offset instelt (+1/+2/+3 of -1/-2/-3).
-    Startniveaus zijn instelbaar. Hysterese voorkomt pendelen.
-    Interval werkt gegarandeerd elke X minuten (1–30 min).
-    Werkt alleen wanneer de warmtepomp in de gekozen modus staat.
+    RTC-regeling die automatisch de warmtepomp-offset instelt
+    op basis van verschil tussen thermostaat en ruimtetemperatuur.
+    Deze versie draait VAST elke 15 minuten (00,15,30,45).
 
   domain: automation
 
@@ -31,7 +28,7 @@ blueprint:
           domain: number
 
     wp_mode_entity:
-      name: Warmtepomp modus entity
+      name: Warmtepomp modus sensor
       selector:
         entity:
           domain: sensor
@@ -51,9 +48,8 @@ blueprint:
           max: 1
           step: 0.1
 
-    # Te warm → negatieve correctie
     warm_threshold_1:
-      name: Te warm – drempel voor -1 (°C)
+      name: Te warm → -1 (°C verschil)
       default: 0.5
       selector:
         number:
@@ -62,7 +58,7 @@ blueprint:
           step: 0.1
 
     warm_threshold_2:
-      name: Te warm – drempel voor -2 (°C)
+      name: Te warm → -2 (°C verschil)
       default: 1.0
       selector:
         number:
@@ -71,7 +67,7 @@ blueprint:
           step: 0.1
 
     warm_threshold_3:
-      name: Te warm – drempel voor -3 (°C)
+      name: Te warm → -3 (°C verschil)
       default: 1.5
       selector:
         number:
@@ -79,9 +75,8 @@ blueprint:
           max: 5
           step: 0.1
 
-    # Te koud → positieve correctie
     cold_threshold_1:
-      name: Te koud – drempel voor +1 (°C)
+      name: Te koud → +1 (°C verschil)
       default: 0.5
       selector:
         number:
@@ -90,7 +85,7 @@ blueprint:
           step: 0.1
 
     cold_threshold_2:
-      name: Te koud – drempel voor +2 (°C)
+      name: Te koud → +2 (°C verschil)
       default: 1.0
       selector:
         number:
@@ -99,7 +94,7 @@ blueprint:
           step: 0.1
 
     cold_threshold_3:
-      name: Te koud – drempel voor +3 (°C)
+      name: Te koud → +3 (°C verschil)
       default: 1.5
       selector:
         number:
@@ -107,74 +102,54 @@ blueprint:
           max: 5
           step: 0.1
 
-    interval_minutes:
-      name: Update-interval (minuten)
-      default: 15
-      selector:
-        number:
-          min: 1
-          max: 30
-          step: 1
-          unit_of_measurement: minutes
-
 mode: single
 
-# Elke minuut triggeren
+# 🔥 ELKE 15 MINUTEN: 00, 15, 30, 45
 trigger:
   - platform: time_pattern
-    minutes: "*"
+    minutes: "0,15,30,45"
 
-# Alle inputs eerst naar variabelen halen
+# Alleen draaien als WP-modus overeenkomt
+condition:
+  - condition: template
+    value_template: >
+      {{ states(wp_mode_entity) | trim | lower ==
+         required_mode | trim | lower }}
+
 variables:
-  thermostat_entity: !input thermostat
-  room_temp_entity: !input room_temp
-  wp_offset_entity: !input wp_offset_number
-  wp_mode_entity_var: !input wp_mode_entity
-  required_mode_var: !input required_mode
-
-  interval: !input interval_minutes
-
-  hysteresis_value: !input hysteresis
-  warm_t1: !input warm_threshold_1
-  warm_t2: !input warm_threshold_2
-  warm_t3: !input warm_threshold_3
-  cold_t1: !input cold_threshold_1
-  cold_t2: !input cold_threshold_2
-  cold_t3: !input cold_threshold_3
-
-  set: "{{ state_attr(thermostat_entity, 'temperature') | float(0) }}"
-  room: "{{ states(room_temp_entity) | float(0) }}"
+  set: "{{ state_attr(thermostat, 'temperature') | float }}"
+  room: "{{ states(room_temp) | float }}"
   diff: "{{ set - room }}"
-  h: "{{ hysteresis_value | float(0) }}"
+  h: "{{ hysteresis | float }}"
 
-  new_offset: >-
-    {% if diff > (cold_t3 + h) %}
+  wt1: "{{ warm_threshold_1 | float }}"
+  wt2: "{{ warm_threshold_2 | float }}"
+  wt3: "{{ warm_threshold_3 | float }}"
+
+  ct1: "{{ cold_threshold_1 | float }}"
+  ct2: "{{ cold_threshold_2 | float }}"
+  ct3: "{{ cold_threshold_3 | float }}"
+
+  offset: >-
+    {% if diff > ct3 + h %}
       3
-    {% elif diff > (cold_t2 + h) %}
+    {% elif diff > ct2 + h %}
       2
-    {% elif diff > (cold_t1 + h) %}
+    {% elif diff > ct1 + h %}
       1
-    {% elif diff < -(warm_t3 + h) %}
+    {% elif diff < -(wt3 + h) %}
       -3
-    {% elif diff < -(warm_t2 + h) %}
+    {% elif diff < -(wt2 + h) %}
       -2
-    {% elif diff < -(warm_t1 + h) %}
+    {% elif diff < -(wt1 + h) %}
       -1
     {% else %}
       0
     {% endif %}
 
-# Eerst check: zitten we op het juiste interval & in de juiste modus?
-condition:
-  - condition: template
-    value_template: "{{ (now().minute % (interval | int)) == 0 }}"
-  - condition: template
-    value_template: "{{ states(wp_mode_entity_var) == required_mode_var }}"
-
-# Offset zetten
 action:
   - service: number.set_value
     target:
-      entity_id: "{{ wp_offset_entity }}"
+      entity_id: "{{ wp_offset_number }}"
     data:
-      value: "{{ new_offset }}"
+      value: "{{ offset }}"
