@@ -107,7 +107,13 @@ mode: single
 # 🔥 ELKE 15 MINUTEN: 00, 15, 30, 45
 trigger:
   - platform: time_pattern
-    minutes: "0,15,30,45"
+    minutes: "0"
+  - platform: time_pattern
+    minutes: "15"
+  - platform: time_pattern
+    minutes: "30"
+  - platform: time_pattern
+    minutes: "45"
 
 # Alleen draaien als WP-modus overeenkomt
 condition:
