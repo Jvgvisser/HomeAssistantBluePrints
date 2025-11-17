@@ -1,15 +1,17 @@
 blueprint:
-  name: RTC – Room Temperature Compensation (Simple thresholds)
+  name: RTC – Room Temperature Compensation (Complete)
   description: >
-    RTC-regeling waarbij je alleen de startverschillen instelt waarop de
-    warmtepomp-correcties +1/+2/+3 of -1/-2/-3 actief worden. Werkt alleen
-    wanneer de warmtepomp in de gekozen verwarmingsmodus staat.
+    RTC-regeling die op basis van het verschil tussen de thermostaat
+    (basistemperatuur) en de ruimtetemperatuur automatisch de
+    warmtepomp-offset instelt (+1/+2/+3 of -1/-2/-3).
+    Startniveaus zijn instelbaar. Hysterese voorkomt pendelen.
+    Automatisering draait alleen wanneer de warmtepomp in de gekozen modus staat.
 
   domain: automation
 
   input:
     thermostat:
-      name: Thermostaat
+      name: Thermostaat (basistemperatuur)
       selector:
         entity:
           domain: climate
@@ -22,25 +24,28 @@ blueprint:
           device_class: temperature
 
     wp_offset_number:
-      name: Warmtepomp water-offset
+      name: Warmtepomp water-offset (number entity)
       selector:
         entity:
           domain: number
 
     wp_mode_entity:
-      name: Warmtepomp mode entity
+      name: Warmtepomp modus entity
+      description: Sensor die aangeeft in welke modus de WP staat (bijv. Heat+DHW)
       selector:
         entity:
           domain: sensor
 
     required_mode:
-      name: Vereiste WP modus
-      default: "heat+dhw"
+      name: Vereiste WP-modus
+      description: Automatie werkt alleen bij deze modus (zoals 'Heat+DHW')
+      default: "Heat+DHW"
       selector:
         text:
 
     hysteresis:
       name: Hysterese (°C)
+      description: Voorkomt pendelen rondom de drempelwaarden
       default: 0.1
       selector:
         number:
@@ -48,8 +53,9 @@ blueprint:
           max: 1.0
           step: 0.1
 
+    # Te warm → negatieve correctie
     warm_threshold_1:
-      name: Te warm – startpunt voor -1
+      name: Te warm – startpunt voor -1 (°C verschil)
       default: 0.5
       selector:
         number:
@@ -58,7 +64,7 @@ blueprint:
           step: 0.1
 
     warm_threshold_2:
-      name: Te warm – startpunt voor -2
+      name: Te warm – startpunt voor -2 (°C verschil)
       default: 1.0
       selector:
         number:
@@ -67,7 +73,7 @@ blueprint:
           step: 0.1
 
     warm_threshold_3:
-      name: Te warm – startpunt voor -3
+      name: Te warm – startpunt voor -3 (°C verschil)
       default: 1.5
       selector:
         number:
@@ -75,8 +81,9 @@ blueprint:
           max: 5
           step: 0.1
 
+    # Te koud → positieve correctie
     cold_threshold_1:
-      name: Te koud – startpunt voor +1
+      name: Te koud – startpunt voor +1 (°C verschil)
       default: 0.5
       selector:
         number:
@@ -85,7 +92,7 @@ blueprint:
           step: 0.1
 
     cold_threshold_2:
-      name: Te koud – startpunt voor +2
+      name: Te koud – startpunt voor +2 (°C verschil)
       default: 1.0
       selector:
         number:
@@ -94,7 +101,7 @@ blueprint:
           step: 0.1
 
     cold_threshold_3:
-      name: Te koud – startpunt voor +3
+      name: Te koud – startpunt voor +3 (°C verschil)
       default: 1.5
       selector:
         number:
@@ -102,20 +109,22 @@ blueprint:
           max: 5
           step: 0.1
 
-    interval:
-      name: Update-interval (seconden)
-      default: 60
+    interval_minutes:
+      name: Update-interval (minuten)
+      description: Hoe vaak de RTC-berekening gedaan wordt
+      default: 1
       selector:
         number:
-          min: 10
-          max: 600
-          step: 10
+          min: 1
+          max: 30
+          step: 1
+          unit_of_measurement: minutes
 
 mode: single
 
 trigger:
   - platform: time_pattern
-    seconds: "/{{ interval }}"
+    minutes: "/{{ interval_minutes }}"
 
 condition:
   - condition: template
