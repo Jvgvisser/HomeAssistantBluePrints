@@ -1,12 +1,12 @@
 blueprint:
-  name: RTC – Room Temperature Compensation (Fixed 15 min)
+  name: RTC – Room Temperature Compensation (15 min fixed)
   description: >
     Regelt automatisch de warmtepomp-offset (+3 t/m -3) op basis van het
     verschil tussen thermostaattemperatuur en ruimtetemperatuur.
-    Draait VAST elke 15 minuten (00, 15, 30, 45). 
-    Geen helpers nodig. Werkt alleen in de vereiste WP-modus.
+    Draait elke 15 minuten: 00, 15, 30, 45.
 
   domain: automation
+
   input:
     thermostat:
       name: Thermostaat (basistemperatuur)
@@ -15,27 +15,26 @@ blueprint:
           domain: climate
 
     room_temp:
-      name: Ruimtetemperatuursensor
+      name: Ruimtetemperatuur sensor
       selector:
         entity:
           domain: sensor
           device_class: temperature
 
     wp_offset_number:
-      name: Warmtepomp water-offset (number entity)
+      name: Warmtepomp offset (number)
       selector:
         entity:
           domain: number
 
     wp_mode_entity:
-      name: Warmtepomp modus sensor
+      name: WP-modus sensor
       selector:
         entity:
           domain: sensor
 
     required_mode:
       name: Vereiste WP-modus
-      description: Alleen draaien als WP deze modus heeft.
       default: "Heat+DHW"
       selector:
         text:
@@ -50,7 +49,7 @@ blueprint:
           step: 0.1
 
     warm_threshold_1:
-      name: Te warm → offset -1 bij diff ≥
+      name: Diff voor -1
       default: 0.5
       selector:
         number:
@@ -59,7 +58,7 @@ blueprint:
           step: 0.1
 
     warm_threshold_2:
-      name: Te warm → offset -2 bij diff ≥
+      name: Diff voor -2
       default: 1.0
       selector:
         number:
@@ -68,7 +67,7 @@ blueprint:
           step: 0.1
 
     warm_threshold_3:
-      name: Te warm → offset -3 bij diff ≥
+      name: Diff voor -3
       default: 1.5
       selector:
         number:
@@ -77,7 +76,7 @@ blueprint:
           step: 0.1
 
     cold_threshold_1:
-      name: Te koud → offset +1 bij diff ≥
+      name: Diff voor +1
       default: 0.5
       selector:
         number:
@@ -86,7 +85,7 @@ blueprint:
           step: 0.1
 
     cold_threshold_2:
-      name: Te koud → offset +2 bij diff ≥
+      name: Diff voor +2
       default: 1.0
       selector:
         number:
@@ -95,7 +94,7 @@ blueprint:
           step: 0.1
 
     cold_threshold_3:
-      name: Te koud → offset +3 bij diff ≥
+      name: Diff voor +3
       default: 1.5
       selector:
         number:
@@ -103,37 +102,30 @@ blueprint:
           max: 5
           step: 0.1
 
-
 mode: single
 
-##############################################
-# TRIGGER – ELKE 15 MINUTEN (00, 15, 30, 45)
-##############################################
+########################################
+# TRIGGER — werkt ALTIJD in blueprints
+########################################
 trigger:
-  - platform: time_pattern
-    minute: "0"
-  - platform: time_pattern
-    minute: "15"
-  - platform: time_pattern
-    minute: "30"
-  - platform: time_pattern
-    minute: "45"
+  - platform: template
+    value_template: "{{ now().minute in [0, 15, 30, 45] }}"
 
-##############################################
-# CONDITION – WP moet in juiste modus staan
-##############################################
+########################################
+# Alleen draaien in juiste WP-modus
+########################################
 condition:
   - condition: template
     value_template: >
       {{ states(wp_mode_entity) | trim | lower ==
          required_mode | trim | lower }}
 
-##############################################
-# VARIABLES – Logica voor diff & offset
-##############################################
+########################################
+# Diff / offset berekenen
+########################################
 variables:
-  set: "{{ state_attr(thermostat, 'temperature') | float(0) }}"
-  room: "{{ states(room_temp) | float(0) }}"
+  set: "{{ state_attr(thermostat, 'temperature') | float }}"
+  room: "{{ states(room_temp) | float }}"
   diff: "{{ set - room }}"
   h: "{{ hysteresis | float }}"
 
@@ -162,9 +154,9 @@ variables:
       0
     {% endif %}
 
-##############################################
-# ACTION – Offset zetten
-##############################################
+########################################
+# Offset ACTIE
+########################################
 action:
   - service: number.set_value
     target:
