@@ -123,8 +123,9 @@ blueprint:
 mode: single
 
 trigger:
-  - platform: time_pattern
-    minutes: "/{{ interval_minutes }}"
+  - platform: template
+    value_template: >
+      {{ (now().minute % interval_minutes) == 0 }}
 
 condition:
   - condition: template
