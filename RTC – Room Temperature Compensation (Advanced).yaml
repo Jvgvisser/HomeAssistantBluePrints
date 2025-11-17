@@ -1,13 +1,12 @@
 blueprint:
-  name: RTC – Room Temperature Compensation (Advanced)
+  name: RTC – Room Temperature Compensation (Simple thresholds)
   description: >
-    Geavanceerde RTC-regeling (Room Temperature Compensation). Past automatisch
-    de water-offset van de warmtepomp aan op basis van het verschil tussen
-    thermostaat-instelling en ruimtetemperatuur. Inclusief hysterese, instelbare
-    thresholds en offsets, en werkt alleen in de gekozen warmtepompmodus
-    (bijvoorbeeld heat+dhw).
+    RTC-regeling waarbij je alleen de startverschillen instelt waarop de
+    warmtepomp-correcties +1/+2/+3 of -1/-2/-3 actief worden. Werkt alleen
+    wanneer de warmtepomp in de gekozen verwarmingsmodus staat.
 
   domain: automation
+
   input:
     thermostat:
       name: Thermostaat
@@ -16,28 +15,26 @@ blueprint:
           domain: climate
 
     room_temp:
-      name: Ruimtetemperatuur sensor
+      name: Ruimtetemperatuursensor
       selector:
         entity:
           domain: sensor
           device_class: temperature
 
     wp_offset_number:
-      name: Warmtepomp water-offset (number entity)
+      name: Warmtepomp water-offset
       selector:
         entity:
           domain: number
 
     wp_mode_entity:
       name: Warmtepomp mode entity
-      description: Selecteer de entiteit die de warmtepomp-modus aangeeft (string of select)
       selector:
         entity:
           domain: sensor
 
     required_mode:
-      name: Vereiste modus (bijv. heat+dhw)
-      description: Automatie werkt alleen wanneer deze mode actief is
+      name: Vereiste WP modus
       default: "heat+dhw"
       selector:
         text:
@@ -51,8 +48,8 @@ blueprint:
           max: 1.0
           step: 0.1
 
-    threshold_1:
-      name: Threshold 1 (°C)
+    warm_threshold_1:
+      name: Te warm – startpunt voor -1
       default: 0.5
       selector:
         number:
@@ -60,8 +57,8 @@ blueprint:
           max: 5
           step: 0.1
 
-    threshold_2:
-      name: Threshold 2 (°C)
+    warm_threshold_2:
+      name: Te warm – startpunt voor -2
       default: 1.0
       selector:
         number:
@@ -69,8 +66,8 @@ blueprint:
           max: 5
           step: 0.1
 
-    threshold_3:
-      name: Threshold 3 (°C)
+    warm_threshold_3:
+      name: Te warm – startpunt voor -3
       default: 1.5
       selector:
         number:
@@ -78,35 +75,35 @@ blueprint:
           max: 5
           step: 0.1
 
-    offset_1:
-      name: Offset laag
-      default: 1
+    cold_threshold_1:
+      name: Te koud – startpunt voor +1
+      default: 0.5
       selector:
         number:
-          min: -10
-          max: 10
-          step: 1
+          min: 0.1
+          max: 5
+          step: 0.1
 
-    offset_2:
-      name: Offset midden
-      default: 2
+    cold_threshold_2:
+      name: Te koud – startpunt voor +2
+      default: 1.0
       selector:
         number:
-          min: -10
-          max: 10
-          step: 1
+          min: 0.1
+          max: 5
+          step: 0.1
 
-    offset_3:
-      name: Offset hoog
-      default: 3
+    cold_threshold_3:
+      name: Te koud – startpunt voor +3
+      default: 1.5
       selector:
         number:
-          min: -10
-          max: 10
-          step: 1
+          min: 0.1
+          max: 5
+          step: 0.1
 
     interval:
-      name: Update-interval (sec)
+      name: Update-interval (seconden)
       default: 60
       selector:
         number:
@@ -116,50 +113,45 @@ blueprint:
 
 mode: single
 
-# ──────────────────────────────────────────
 trigger:
   - platform: time_pattern
     seconds: "/{{ interval }}"
 
-# ──────────────────────────────────────────
 condition:
-  # Alleen draaien wanneer WP in gekozen modus staat
   - condition: template
     value_template: "{{ states(wp_mode_entity) == required_mode }}"
 
-# ──────────────────────────────────────────
 variables:
-  # Inputs
   set: "{{ state_attr(thermostat, 'temperature') | float }}"
   room: "{{ states(room_temp) | float }}"
   diff: "{{ set - room }}"
   h: "{{ hysteresis }}"
-  t1: "{{ threshold_1 }}"
-  t2: "{{ threshold_2 }}"
-  t3: "{{ threshold_3 }}"
-  o1: "{{ offset_1 }}"
-  o2: "{{ offset_2 }}"
-  o3: "{{ offset_3 }}"
 
-  # Bereken offset met hysterese
+  wt1: "{{ warm_threshold_1 }}"
+  wt2: "{{ warm_threshold_2 }}"
+  wt3: "{{ warm_threshold_3 }}"
+
+  ct1: "{{ cold_threshold_1 }}"
+  ct2: "{{ cold_threshold_2 }}"
+  ct3: "{{ cold_threshold_3 }}"
+
   new_offset: >-
-    {% if diff > t3 + h %}
-      {{ -o3 }}
-    {% elif diff > t2 + h %}
-      {{ -o2 }}
-    {% elif diff > t1 + h %}
-      {{ -o1 }}
-    {% elif diff < -t3 - h %}
-      {{ o3 }}
-    {% elif diff < -t2 - h %}
-      {{ o2 }}
-    {% elif diff < -t1 - h %}
-      {{ o1 }}
+    {% if diff > ct3 + h %}
+      3
+    {% elif diff > ct2 + h %}
+      2
+    {% elif diff > ct1 + h %}
+      1
+    {% elif diff < -wt3 - h %}
+      -3
+    {% elif diff < -wt2 - h %}
+      -2
+    {% elif diff < -wt1 - h %}
+      -1
     {% else %}
       0
     {% endif %}
 
-# ──────────────────────────────────────────
 action:
   - service: number.set_value
     target:
