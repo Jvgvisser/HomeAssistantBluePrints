@@ -122,28 +122,40 @@ blueprint:
 
 mode: single
 
+# Intervaltrigger via template (geen time_pattern meer)
 trigger:
   - platform: template
     value_template: >
-      {{ (now().minute % interval_minutes) == 0 }}
+      {{ (now().minute % (interval_minutes | int(1))) == 0 }}
 
-condition:
-  - condition: template
-    value_template: "{{ states(wp_mode_entity) == required_mode }}"
-
+# Variabelen uit inputs + berekeningen
 variables:
-  set: "{{ state_attr(thermostat, 'temperature') | float }}"
-  room: "{{ states(room_temp) | float }}"
+  thermostat_entity: !input thermostat
+  room_temp_entity: !input room_temp
+  wp_offset_entity: !input wp_offset_number
+  wp_mode_entity_var: !input wp_mode_entity
+  required_mode_var: !input required_mode
+
+  hysteresis_value: !input hysteresis
+  warm_t1: !input warm_threshold_1
+  warm_t2: !input warm_threshold_2
+  warm_t3: !input warm_threshold_3
+  cold_t1: !input cold_threshold_1
+  cold_t2: !input cold_threshold_2
+  cold_t3: !input cold_threshold_3
+  interval_minutes: !input interval_minutes
+
+  set: "{{ state_attr(thermostat_entity, 'temperature') | float(0) }}"
+  room: "{{ states(room_temp_entity) | float(0) }}"
   diff: "{{ set - room }}"
-  h: "{{ hysteresis }}"
+  h: "{{ hysteresis_value | float(0) }}"
 
-  wt1: "{{ warm_threshold_1 }}"
-  wt2: "{{ warm_threshold_2 }}"
-  wt3: "{{ warm_threshold_3 }}"
-
-  ct1: "{{ cold_threshold_1 }}"
-  ct2: "{{ cold_threshold_2 }}"
-  ct3: "{{ cold_threshold_3 }}"
+  wt1: "{{ warm_t1 | float(0) }}"
+  wt2: "{{ warm_t2 | float(0) }}"
+  wt3: "{{ warm_t3 | float(0) }}"
+  ct1: "{{ cold_t1 | float(0) }}"
+  ct2: "{{ cold_t2 | float(0) }}"
+  ct3: "{{ cold_t3 | float(0) }}"
 
   new_offset: >-
     {% if diff > ct3 + h %}
@@ -162,9 +174,16 @@ variables:
       0
     {% endif %}
 
+# Alleen draaien als WP in de juiste modus staat
+condition:
+  - condition: template
+    value_template: >
+      {{ states(wp_mode_entity_var) == required_mode_var }}
+
+# Offset zetten
 action:
   - service: number.set_value
     target:
-      entity_id: !input wp_offset_number
+      entity_id: "{{ wp_offset_entity }}"
     data:
       value: "{{ new_offset }}"
